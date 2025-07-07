@@ -5,6 +5,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
+import { API_ENDPOINTS } from "@/lib/config";
 
 interface SendEmailProps {
     isModalOpen: boolean;
@@ -67,7 +68,7 @@ export default function SendEmail({ isModalOpen, setIsModalOpen }: SendEmailProp
             const formData = new FormData();
             formData.append('file', selectedFile);
             
-            const response = await fetch('http://localhost:8000/upload', {
+            const response = await fetch(API_ENDPOINTS.upload, {
                 method: 'POST',
                 body: formData,
             });

@@ -1,0 +1,24 @@
+# Backend (FastAPI) - não deve ir para Vercel
+backend/
+
+# Arquivos de desenvolvimento Python
+pyrightconfig.json
+
+# Arquivos do sistema
+.DS_Store
+
+# Arquivos de desenvolvimento local
+.vscode/
+
+# Arquivos de build local
+.next/
+
+# Dependências (serão instaladas na Vercel)
+node_modules/
+
+# Arquivos de lock (a Vercel usa npm por padrão)
+pnpm-lock.yaml
+
+# Git
+.git/
+.gitignore 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { FileText, Calendar, Eye, Trash2, CopyIcon, XIcon } from "lucide-react";
 import Link from "next/link";
+import { API_ENDPOINTS } from "@/lib/config";
 
 interface Upload {
     id: string;
@@ -30,7 +31,7 @@ export default function UploadsList() {
 
     const fetchUploads = async () => {
         try {
-            const response = await fetch('http://localhost:8000/uploads');
+            const response = await fetch(API_ENDPOINTS.uploads);
             const data = await response.json();
             setUploads(data.uploads || []);
         } catch (error) {
@@ -66,7 +67,7 @@ export default function UploadsList() {
         setDeleting(true);
         if (confirmModal.type === 'single' && confirmModal.id) {
             try {
-                const response = await fetch(`http://localhost:8000/uploads/${confirmModal.id}`, {
+                const response = await fetch(API_ENDPOINTS.uploadById(confirmModal.id), {
                     method: 'DELETE',
                 });
                 if (response.ok) {
@@ -79,7 +80,7 @@ export default function UploadsList() {
             try {
                 // Deletar todos
                 const deletePromises = uploads.map(upload =>
-                    fetch(`http://localhost:8000/uploads/${upload.id}`, { method: 'DELETE' })
+                    fetch(API_ENDPOINTS.uploadById(upload.id), { method: 'DELETE' })
                 );
                 await Promise.all(deletePromises);
                 setUploads([]);

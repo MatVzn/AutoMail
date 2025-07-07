@@ -16,7 +16,11 @@ app = FastAPI()
 # Configuração do CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=[
+        "http://localhost:3000",  # Frontend local
+        "https://caseautou.vercel.app",  # Vercel (ajuste para seu domínio)
+        "https://*.vercel.app",  # Qualquer subdomínio Vercel
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
