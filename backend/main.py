@@ -27,7 +27,12 @@ app.add_middleware(
 )
 
 # Inicializar cliente Itzam
-itzam_client = Itzam(api_key=os.getenv("ITZAM_API_KEY"))
+itzam_api_key = os.getenv("ITZAM_API_KEY")
+if not itzam_api_key:
+    print("⚠️  AVISO: ITZAM_API_KEY não configurada. Funcionalidade de IA será desabilitada.")
+    itzam_client = None
+else:
+    itzam_client = Itzam(api_key=itzam_api_key)
 
 # Função para inicializar o banco de dados
 def init_db():
@@ -63,54 +68,59 @@ async def upload_file(file: UploadFile = File(...)):
     resposta_automatica = ""
     workflow_slug = "automail"  # Workflow fixo
     
-    try:
-        response = itzam_client.text.generate(
-            workflow_slug=workflow_slug,
-            input=texto_extraido,
-            stream=False
-        )
-        
-        resultado_itzam = response.text
-        print(f"Resposta do Itzam: {resultado_itzam}")  # Debug
-        
-        # Tentar extrair JSON do markdown ou processar como JSON puro
+    if itzam_client:
         try:
-            import json
-            import re
+            response = itzam_client.text.generate(
+                workflow_slug=workflow_slug,
+                input=texto_extraido,
+                stream=False
+            )
             
-            # Primeiro tenta processar como JSON puro
+            resultado_itzam = response.text
+            print(f"Resposta do Itzam: {resultado_itzam}")  # Debug
+            
+            # Tentar extrair JSON do markdown ou processar como JSON puro
             try:
-                json_result = json.loads(resultado_itzam)
-                categoria = json_result.get('category', '')
-                resposta_automatica = json_result.get('auto_response', '')
-                resultado_itzam = json.dumps(json_result, indent=2, ensure_ascii=False)
-            except json.JSONDecodeError:
-                # Se não for JSON puro, tenta extrair do markdown
-                # Procura por blocos de código JSON no markdown
-                json_pattern = r'```(?:json)?\s*(\{.*?\})\s*```'
-                match = re.search(json_pattern, resultado_itzam, re.DOTALL)
+                import json
+                import re
                 
-                if match:
-                    json_str = match.group(1)
-                    json_result = json.loads(json_str)
+                # Primeiro tenta processar como JSON puro
+                try:
+                    json_result = json.loads(resultado_itzam)
                     categoria = json_result.get('category', '')
                     resposta_automatica = json_result.get('auto_response', '')
                     resultado_itzam = json.dumps(json_result, indent=2, ensure_ascii=False)
-                else:
-                    # Se não encontrar JSON no markdown, manter como texto
-                    pass
+                except json.JSONDecodeError:
+                    # Se não for JSON puro, tenta extrair do markdown
+                    # Procura por blocos de código JSON no markdown
+                    json_pattern = r'```(?:json)?\s*(\{.*?\})\s*```'
+                    match = re.search(json_pattern, resultado_itzam, re.DOTALL)
                     
+                    if match:
+                        json_str = match.group(1)
+                        json_result = json.loads(json_str)
+                        categoria = json_result.get('category', '')
+                        resposta_automatica = json_result.get('auto_response', '')
+                        resultado_itzam = json.dumps(json_result, indent=2, ensure_ascii=False)
+                    else:
+                        # Se não encontrar JSON no markdown, manter como texto
+                        pass
+                        
+            except Exception as e:
+                # Se der erro em qualquer etapa, manter como texto
+                print(f"Erro ao processar JSON: {e}")
+                pass
+                
         except Exception as e:
-            # Se der erro em qualquer etapa, manter como texto
-            print(f"Erro ao processar JSON: {e}")
-            pass
-            
-    except Exception as e:
-        error_msg = str(e)
-        if "404" in error_msg:
-            resultado_itzam = f"Erro: Workflow '{workflow_slug}' não encontrado. Verifique se o workflow existe na sua conta do Itzam."
-        else:
-            resultado_itzam = f"Erro ao processar com Itzam: {error_msg}"
+            error_msg = str(e)
+            if "404" in error_msg:
+                resultado_itzam = f"Erro: Workflow '{workflow_slug}' não encontrado. Verifique se o workflow existe na sua conta do Itzam."
+            else:
+                resultado_itzam = f"Erro ao processar com Itzam: {error_msg}"
+    else:
+        resultado_itzam = "Funcionalidade de IA desabilitada - ITZAM_API_KEY não configurada"
+        categoria = "Não classificado"
+        resposta_automatica = "Resposta automática não disponível"
 
     # Salvar no banco de dados
     upload_id = str(uuid.uuid4())
