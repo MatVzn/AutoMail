@@ -1,0 +1,18 @@
+{
+    "include": [
+        "backend"
+    ],
+    "exclude": [
+        "**/node_modules",
+        "**/__pycache__",
+        "**/venv",
+        ".next"
+    ],
+    "pythonVersion": "3.8",
+    "pythonPlatform": "Darwin",
+    "venvPath": "backend",
+    "venv": "venv",
+    "extraPaths": [
+        "backend"
+    ]
+} 
