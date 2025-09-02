@@ -18,7 +18,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",  # Frontend local
-        "https://automail-mocha.vercel.app",  # Seu domínio Vercel atual
+        "https://auto-mail-eight.vercel.app",  # Seu domínio Vercel atual
         "https://*.vercel.app",  # Qualquer subdomínio Vercel
     ],
     allow_credentials=True,
